@@ -1,0 +1,38 @@
+[project]
+name = "odoo_xmlrpc_wrapper"
+version = "1.0.1"
+description = "A simple Python library to make CRUD process easier"
+readme = "README.md"
+requires-python = ">=3.7"
+license = {file = "LICENSE"}
+keywords = ["odoo", "external", "api", "xmlrpc", "rpc", "wrapper"]
+authors = [
+  {name = "Cagatay URESIN", email = "cagatayuresin@gmail.com"}
+]
+maintainers = [
+  {name = "Cagatay URESIN", email = "cagatayuresin@gmail.com"}
+]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Environment :: Console",
+  "Framework :: Odoo",
+  "Framework :: Odoo :: 16.0",
+  "Intended Audience :: Developers",
+  "Intended Audience :: System Administrators",
+  "License :: Freeware",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.7",
+  "Topic :: Office/Business",
+  "Topic :: Software Development :: Libraries",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+]
+[project.urls]
+"Homepage" = "https://github.com/cagatayuresin/odoo-xmlrpc-wrapper"
+"Bug Reports" = "https://github.com/cagatayuresin/odoo-xmlrpc-wrapper/issues"
+"Buy Me A Coffee" = "https://www.buymeacoffee.com/cagatayuresin"
+"Source" = "https://github.com/cagatayuresin/odoo-xmlrpc-wrapper"
+[build-system]
+requires = ["setuptools>=43.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
