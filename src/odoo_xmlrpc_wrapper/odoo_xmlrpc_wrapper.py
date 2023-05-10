@@ -54,13 +54,11 @@ class Bot:
         self.profile = self.read("res.users", ids=self.uid, fields=["name"])[0]
         self.name = self.profile["name"]
         self.successful = True
-        print(
-            f"Successfully Logged\n"
-            f"Name: {self.name}\n"
-            f"DB: {self.DB}\n"
-            f"HOST: {self.HOST}\n"
-            f"VERSION: {self.version['server_version']}"
-        )
+        if self.successful:
+            print(self.status)
+
+    def satus(self) -> str:
+        return f"Successfully Logged\nName: {self.name}\nDB: {self.DB}\nHOST: {self.HOST}\nVERSION: {self.version['server_version']}"
 
     def search_read(
         self,
@@ -261,4 +259,22 @@ class Bot:
             "fields_get",
             [],
             {"attributes": attributes} if attributes else {},
+        )
+
+    def custom(self, model: str = None, command: str = None, att=[[]]):
+        """
+        Triggering a method remotely.
+
+        Args:
+            model (str): Model name.
+            command (str): Your custom command's name.
+            att (list, optional): Sends attributes your custom method.
+
+        Returns:
+            Your method's return.
+        """
+        if model:
+            self.model = model
+        return self.__orm.execute_kw(
+            self.DB, self.uid, self.__PASSWORD, self.model, command, att
         )

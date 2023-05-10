@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="odoo_xmlrpc_wrapper",
-    version="1.0.1",
+    version="1.1.1",
     description="A simple Python library to make CRUD process easier.",
     long_description=long_description,
     long_description_content_type="text/markdown",

@@ -1,1 +1,5 @@
+v1.1.1, 2023-05-10 -- Remotely triggering custom commands of any model
+    * bot.custom("model.name", "command_name", [[]])
+    * added bot.status()
+
 v1.0.1, 2023-03-23 -- Initial Release
