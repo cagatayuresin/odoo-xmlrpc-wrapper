@@ -1,0 +1,12 @@
+LICENSE
+README.md
+pyproject.toml
+setup.cfg
+setup.py
+src/odoo_xmlrpc_wrapper/__init__.py
+src/odoo_xmlrpc_wrapper/odoo_xmlrpc_wrapper.py
+src/odoo_xmlrpc_wrapper.egg-info/PKG-INFO
+src/odoo_xmlrpc_wrapper.egg-info/SOURCES.txt
+src/odoo_xmlrpc_wrapper.egg-info/dependency_links.txt
+src/odoo_xmlrpc_wrapper.egg-info/top_level.txt
+tests/test_odoo_xmlrpc_wapper.py
