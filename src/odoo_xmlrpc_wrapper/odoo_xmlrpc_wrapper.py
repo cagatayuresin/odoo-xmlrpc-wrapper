@@ -57,7 +57,7 @@ class Bot:
         if self.successful:
             print(self.status)
 
-    def satus(self) -> str:
+    def status(self) -> str:
         return f"Successfully Logged\nName: {self.name}\nDB: {self.DB}\nHOST: {self.HOST}\nVERSION: {self.version['server_version']}"
 
     def search_read(
