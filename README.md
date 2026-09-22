@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/cagatayuresin/odoo-xmlrpc-wrapper/actions/workflows/build.yml/badge.svg)](https://github.com/cagatayuresin/odoo-xmlrpc-wrapper/actions/workflows/build.yml)
 [![Coverage](https://codecov.io/gh/cagatayuresin/odoo-xmlrpc-wrapper/branch/master/graph/badge.svg)](https://app.codecov.io/gh/cagatayuresin/odoo-xmlrpc-wrapper)
-[![PyPI](https://img.shields.io/pypi/v/odoo-xmlrpc-wrapper)](https://pypi.org/project/odoo-xmlrpc-wrapper/)
+[![PyPI](https://img.shields.io/pypi/v/odoo-xmlrpc-wrapper.svg)](https://pypi.org/project/odoo-xmlrpc-wrapper/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 [![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=cagatayuresin_odoo-xmlrpc-wrapper&metric=alert_status)](https://sonarcloud.io/dashboard?id=cagatayuresin_odoo-xmlrpc-wrapper)
