@@ -1,0 +1,13 @@
+# GitHub Actions enforces the 90% coverage threshold before uploading.
+coverage:
+  status:
+    project:
+      default:
+        target: 90%
+        informational: true
+    patch:
+      default:
+        target: 90%
+        informational: true
+
+comment: false

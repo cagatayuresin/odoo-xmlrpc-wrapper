@@ -1,8 +1,13 @@
 # Odoo XMLRPC Wrapper
 
 [![CI](https://github.com/cagatayuresin/odoo-xmlrpc-wrapper/actions/workflows/build.yml/badge.svg)](https://github.com/cagatayuresin/odoo-xmlrpc-wrapper/actions/workflows/build.yml)
+[![Coverage](https://codecov.io/gh/cagatayuresin/odoo-xmlrpc-wrapper/branch/master/graph/badge.svg)](https://app.codecov.io/gh/cagatayuresin/odoo-xmlrpc-wrapper)
 [![PyPI](https://img.shields.io/pypi/v/odoo-xmlrpc-wrapper)](https://pypi.org/project/odoo-xmlrpc-wrapper/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+[![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=cagatayuresin_odoo-xmlrpc-wrapper&metric=alert_status)](https://sonarcloud.io/dashboard?id=cagatayuresin_odoo-xmlrpc-wrapper)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=cagatayuresin_odoo-xmlrpc-wrapper&metric=security_rating)](https://sonarcloud.io/dashboard?id=cagatayuresin_odoo-xmlrpc-wrapper)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=cagatayuresin_odoo-xmlrpc-wrapper&metric=reliability_rating)](https://sonarcloud.io/dashboard?id=cagatayuresin_odoo-xmlrpc-wrapper)
 
 A small Python library for connecting to Odoo and working with its XML-RPC API.
 Create, read, update, delete, search, and call custom model methods with a reusable
@@ -304,6 +309,33 @@ coverage, packaging, and security checks on pushes and pull requests, weekly, an
 on manual dispatch. Actions are pinned to full commit SHAs with read-only default
 permissions. The packaging job installs the built wheel into a fresh environment
 and checks imports and the full offline test suite outside the source tree.
+
+### Coverage on Codecov
+
+[Codecov](https://app.codecov.io/gh/cagatayuresin/odoo-xmlrpc-wrapper) displays
+coverage history and file/line details. The README coverage badge follows
+`master`. A separate Python 3.13 job runs the tests, enforces the 90% coverage
+minimum, and uploads `coverage.xml` using GitHub OIDC authentication. It needs
+no `CODECOV_TOKEN`; only this job receives `id-token: write` permission.
+
+Before the first upload, sign in to Codecov with GitHub, open **Configure / Setup
+repo** for `cagatayuresin/odoo-xmlrpc-wrapper`, and select **GitHub Actions**.
+Ensure the [Codecov GitHub App](https://github.com/apps/codecov) is installed and
+has access to this repository. The checked-in workflow uses OIDC rather than
+the upload token shown in the onboarding example. Commit and push the workflow
+changes, then check the coverage job and the Codecov report for that commit.
+The badge may display an unknown value until the first successful report is
+processed. If the dashboard remains empty afterward, check that Codecov's
+**Configuration → General → Default branch** is `master`.
+
+Uploads run for pushes, scheduled/manual runs, and pull requests from this
+repository. Fork pull requests and Dependabot runs still execute the test matrix,
+but skip the Codecov job. Upload failures fail the coverage job so a missing
+report is visible. [codecov.yml](codecov.yml) disables bot comments and makes
+Codecov's project/patch status checks informational; GitHub Actions continues
+to enforce the 90% minimum independently on every tested Python version.
+
+See the [official Codecov action's OIDC setup](https://github.com/codecov/codecov-action#using-oidc).
 
 ### SonarCloud Automatic Analysis
 

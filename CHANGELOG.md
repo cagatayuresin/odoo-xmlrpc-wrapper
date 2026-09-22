@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Added
+
+- Codecov coverage uploads using GitHub OIDC authentication, a coverage badge,
+  and setup instructions. GitHub Actions retains the 90% coverage requirement.
+- Dynamic SonarCloud Quality Gate, Security Rating, and Reliability Rating badges.
+
 ### Changed
 
 - Create the verifying TLS context explicitly before passing it to the HTTPS
