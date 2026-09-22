@@ -18,6 +18,9 @@ with current security updates.
   timeout, not a total deadline for the entire operation.
 - XML response parsing rejects DTDs, entities, and external references. Responses
   are limited to 30 MiB after decompression; paginate large reads.
+- HTTP error bodies are discarded without being read. Requests are not retried
+  automatically after a disconnect, preventing an ambiguous write from being
+  replayed by the transport.
 - Supply host settings from trusted configuration. URL validation is not an SSRF
   allowlist: do not let an untrusted user choose an arbitrary destination.
 - Use an Odoo account or API key with only the permissions your integration needs.

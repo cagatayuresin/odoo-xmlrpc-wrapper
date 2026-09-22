@@ -1,6 +1,7 @@
 Unreleased
     * Require Python 3.10+ and use one pyproject.toml for package metadata.
     * Verify HTTPS certificates, bound socket waits, reject unsafe XML, and cap responses.
+    * Discard HTTP error bodies and disable automatic retries that could duplicate writes.
     * Validate credentials, URLs, models, record IDs, and method arguments before RPC.
     * Fix update() ID validation; return create(), update(), and delete() results.
     * Use search_count for counts and preserve explicit zero/empty arguments.

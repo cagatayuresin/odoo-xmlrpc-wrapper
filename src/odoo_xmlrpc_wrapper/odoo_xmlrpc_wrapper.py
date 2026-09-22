@@ -4,7 +4,9 @@ import ipaddress
 import math
 import re
 import ssl
-import xmlrpc.client  # nosec B411: every proxy uses a defused, size-limited transport.
+
+# Every proxy uses a defused, size-limited transport below.
+import xmlrpc.client  # nosec B411
 from urllib.parse import urlsplit
 
 from defusedxml.xmlrpc import DefusedExpatParser, DefusedGzipDecodedResponse
@@ -14,6 +16,32 @@ _MAX_RESPONSE_BYTES = 30 * 1024 * 1024
 
 class _SafeResponseMixin:
     """Reject XML entities and bound both ordinary and gzip response bodies."""
+
+    def request(self, host, handler, request_body, verbose=False):
+        # Retrying a disconnected request could duplicate a completed write.
+        return self.single_request(host, handler, request_body, verbose)
+
+    def single_request(self, host, handler, request_body, verbose=False):
+        try:
+            connection = self.send_request(host, handler, request_body, verbose)
+            response = connection.getresponse()
+            if response.status != 200:
+                error = xmlrpc.client.ProtocolError(
+                    host + handler,
+                    response.status,
+                    response.reason,
+                    dict(response.getheaders()),
+                )
+                # Error bodies are untrusted too; discard instead of draining.
+                response.close()
+                raise error
+            self.verbose = verbose
+            return self.parse_response(response)
+        except xmlrpc.client.Fault:
+            raise
+        except BaseException:
+            self.close()
+            raise
 
     def getparser(self):
         target = xmlrpc.client.Unmarshaller(
@@ -199,10 +227,8 @@ class Bot:
         try:
             if test:
                 demo = self._proxy("https://demo.odoo.com/start")
-                try:
-                    info = demo.start()
-                finally:
-                    self._transports[-1].close()
+                info = demo.start()
+                self._transports.pop().close()
                 if not isinstance(info, dict) or not all(
                     key in info for key in ("host", "database", "user", "password")
                 ):
@@ -247,7 +273,7 @@ class Bot:
             self.name = self.profile["name"]
             self.successful = True
         except BaseException:
-            self.close()
+            self._close_transports()
             raise
 
     def _proxy(self, url):
@@ -269,13 +295,28 @@ class Bot:
         self.model = selected
         return selected
 
-    def close(self) -> None:
-        """Close all owned transports; repeated calls are harmless."""
+    def _close_transports(self):
         self._closed = True
         self.successful = False
-        for transport in self._transports:
-            transport.close()
-        self._transports.clear()
+        first_error = None
+        transports, self._transports = self._transports, []
+        for transport in transports:
+            try:
+                transport.close()
+            except Exception as error:
+                if first_error is None:
+                    first_error = error
+        return first_error
+
+    def close(self) -> None:
+        """Close all owned transports; repeated calls are harmless.
+
+        If closing fails, all remaining transports are still closed before
+        the first error is raised.
+        """
+        error = self._close_transports()
+        if error is not None:
+            raise error
 
     def __enter__(self):
         if self._closed:
@@ -283,7 +324,9 @@ class Bot:
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        self.close()
+        error = self._close_transports()
+        if exc_type is None and error is not None:
+            raise error
         return False
 
     def status(self) -> str:
@@ -312,13 +355,14 @@ class Bot:
         }
         if limit is not None:
             kwargs["limit"] = _pagination(limit, "limit")
+        domain = _domain(constraints)
         return self.__orm.execute_kw(
             self.DB,
             self.uid,
             self.__PASSWORD,
             self._model(model),
             "search_read",
-            [_domain(constraints)],
+            [domain],
             kwargs,
         )
 
@@ -335,25 +379,27 @@ class Bot:
             kwargs["offset"] = _pagination(offset, "offset")
         if limit is not None:
             kwargs["limit"] = _pagination(limit, "limit")
+        domain = _domain(constraints)
         return self.__orm.execute_kw(
             self.DB,
             self.uid,
             self.__PASSWORD,
             self._model(model),
             "search",
-            [_domain(constraints)],
+            [domain],
             kwargs,
         )
 
     def count(self, model: str = None, constraints: list = None) -> int:
         """Count matching records on the server without downloading their IDs."""
+        domain = _domain(constraints)
         return self.__orm.execute_kw(
             self.DB,
             self.uid,
             self.__PASSWORD,
             self._model(model),
             "search_count",
-            [_domain(constraints)],
+            [domain],
         )
 
     def read(self, model: str = None, ids: list = None, fields: list = None) -> list:

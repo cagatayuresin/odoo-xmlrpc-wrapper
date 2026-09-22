@@ -92,13 +92,19 @@ jobs:
 
           assert callable(Bot)
           assert "site-packages" in Path(odoo_xmlrpc_wrapper.__file__).parts
+          assert odoo_xmlrpc_wrapper.__version__ == version("odoo_xmlrpc_wrapper")
           print(f"Installed odoo_xmlrpc_wrapper {version('odoo_xmlrpc_wrapper')}")
           PY
+          "$RUNNER_TEMP/wheel-smoke/bin/python" -I -m unittest discover -s "$GITHUB_WORKSPACE/tests" -v
 
   security:
-    name: Python and workflow security
+    name: Python ${{ matrix.python-version }} and workflow security
     runs-on: ubuntu-24.04
     timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.13"]
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -107,7 +113,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: "3.13"
+          python-version: ${{ matrix.python-version }}
       - name: Install locked security tools
         id: install
         run: python -m pip install --require-hashes -r requirements.txt -r requirements-dev.txt
@@ -115,10 +121,10 @@ jobs:
         run: python -m bandit -r src
       - name: Audit runtime dependencies
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        run: python -m pip_audit --require-hashes -r requirements.txt
+        run: python -m pip_audit --strict --require-hashes -r requirements.txt
       - name: Audit development and build dependencies
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        run: python -m pip_audit --require-hashes -r requirements-dev.txt
+        run: python -m pip_audit --strict --require-hashes -r requirements-dev.txt
       - name: Scan GitHub Actions security with zizmor
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: zizmor --offline .github/workflows
@@ -134,6 +140,9 @@ jobs:
           persist-credentials: false
       - name: Scan repository with Trivy
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        env:
+          # Include the development lock as well as requirements.txt.
+          TRIVY_FILE_PATTERNS: 'pip:requirements.*\.txt'
         with:
           version: v0.74.0
           scan-type: fs
@@ -146,7 +155,7 @@ jobs:
           timeout: 10m
           cache: false
           cache-dir: ${{ runner.temp }}/trivy-cache
-          skip-dirs: .git,.venv,venv,build,dist
+          skip-dirs: .git,.venv,venv,build,dist,.trivy-cache,.audit-reports
 
   sonarqube:
     name: SonarQube (optional)

@@ -1,7 +1,9 @@
 """Offline behavioral and security regression tests; no Odoo server is required."""
 
 import contextlib
+import errno
 import gzip
+import http.client
 import io
 import ssl
 import unittest
@@ -147,6 +149,24 @@ class AuthenticationTests(BotTestCase):
         for transport in self.transports:
             transport.close.assert_called_once()
 
+    def test_cleanup_error_does_not_hide_initialization_failure(self):
+        failure = xmlrpc.client.Fault(2, "profile denied")
+        self.orm.execute_kw.side_effect = failure
+
+        def proxy_with_broken_cleanup(url, **kwargs):
+            proxy = self._proxy(url, **kwargs)
+            if url.endswith("/common"):
+                kwargs["transport"].close.side_effect = OSError("cleanup failed")
+            return proxy
+
+        self.proxy.side_effect = proxy_with_broken_cleanup
+        with self.assertRaises(xmlrpc.client.Fault) as error:
+            self.make_bot()
+        self.assertIs(error.exception, failure)
+        self.assertEqual(len(self.transports), 2)
+        for transport in self.transports:
+            transport.close.assert_called_once()
+
 
 class TransportSecurityTests(BotTestCase):
     def test_https_is_default_and_certificate_verification_is_enabled(self):
@@ -258,6 +278,57 @@ class TransportSecurityTests(BotTestCase):
                     ["https://demo.odoo.com/start"],
                 )
         self.common.authenticate.assert_not_called()
+
+
+class TransportFailureTests(BotTestCase):
+    def test_http_errors_close_connection_without_reading_unbounded_body(self):
+        self.make_bot()
+        self.make_bot(secured=False)
+        for transport in self.transports:
+            with self.subTest(transport=type(transport).__name__):
+                response = Mock()
+                response.status = 503
+                response.reason = "Service Unavailable"
+                response.getheader.return_value = "1000000000000"
+                response.getheaders.return_value = [("Content-Length", "1000000000000")]
+                response.read.side_effect = AssertionError(
+                    "Error body must not be read"
+                )
+                connection = Mock()
+                connection.getresponse.return_value = response
+                with patch.object(transport, "send_request", return_value=connection):
+                    with self.assertRaises(xmlrpc.client.ProtocolError) as error:
+                        transport.single_request(
+                            "odoo.example.test", "/xmlrpc/2/object", b"<methodCall/>"
+                        )
+                self.assertEqual(error.exception.errcode, 503)
+                response.read.assert_not_called()
+                transport.close.assert_called_once()
+
+    def test_connection_failures_never_automatically_retry_requests(self):
+        self.make_bot()
+        self.make_bot(secured=False)
+        failures = [http.client.RemoteDisconnected("lost response")]
+        failures.extend(
+            OSError(code, "lost response")
+            for code in (errno.ECONNRESET, errno.ECONNABORTED, errno.EPIPE)
+        )
+        for transport in self.transports:
+            for failure in failures:
+                with self.subTest(
+                    transport=type(transport).__name__, failure=repr(failure)
+                ):
+                    with patch.object(
+                        transport, "single_request", side_effect=failure
+                    ) as request:
+                        with self.assertRaises(type(failure)) as error:
+                            transport.request(
+                                "odoo.example.test",
+                                "/xmlrpc/2/object",
+                                b"<methodCall/>",
+                            )
+                    self.assertIs(error.exception, failure)
+                    request.assert_called_once()
 
 
 class XmlResponseSecurityTests(BotTestCase):
@@ -650,6 +721,51 @@ class LifecycleTests(BotTestCase):
         self.assertIs(error.exception, failure)
         for transport in self.transports:
             transport.close.assert_called_once()
+
+    def test_cleanup_failure_still_closes_remaining_connections(self):
+        bot = self.ready_bot()
+        failure = OSError("cleanup failed")
+        self.transports[0].close.side_effect = failure
+        with self.assertRaises(OSError) as error:
+            bot.close()
+        self.assertIs(error.exception, failure)
+        for transport in self.transports:
+            transport.close.assert_called_once()
+        bot.close()
+
+    def test_context_cleanup_failure_preserves_application_exception(self):
+        bot = self.ready_bot()
+        self.transports[0].close.side_effect = OSError("cleanup failed")
+        failure = RuntimeError("application failure")
+        with self.assertRaises(RuntimeError) as error:
+            with bot:
+                raise failure
+        self.assertIs(error.exception, failure)
+        for transport in self.transports:
+            transport.close.assert_called_once()
+
+    def test_context_cleanup_failure_is_reported_when_block_succeeds(self):
+        bot = self.ready_bot()
+        failure = OSError("cleanup failed")
+        self.transports[0].close.side_effect = failure
+        with self.assertRaises(OSError) as error:
+            with bot:
+                pass
+        self.assertIs(error.exception, failure)
+        for transport in self.transports:
+            transport.close.assert_called_once()
+
+    def test_closed_bot_cannot_be_reused(self):
+        bot = self.ready_bot()
+        bot.close()
+        self.assertFalse(bot.successful)
+        self.assertEqual(bot.status(), "Connection closed")
+        with self.assertRaises(RuntimeError):
+            bot.search()
+        with self.assertRaises(RuntimeError):
+            with bot:
+                self.fail("A closed bot must reject context entry")
+        self.orm.execute_kw.assert_not_called()
 
 
 if __name__ == "__main__":

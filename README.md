@@ -156,8 +156,9 @@ The wrapper returns the server result and respects Odoo's access controls.
   `xmlrpc.client.Fault`, `OSError`, or `TimeoutError` as appropriate for your app.
 - XML responses containing DTDs, entities, or external references are rejected by
   `defusedxml`. Excessively large responses are rejected before parsing completes.
-- The wrapper does not retry application-level failures. Check the server state
-  before retrying a timed-out write; it may already have succeeded.
+- Requests are never automatically retried, including on connection resets.
+  Check the server state before retrying a timed-out write; it may already have
+  succeeded. HTTP error bodies are discarded without reading them into memory.
 
 See [SECURITY.md](SECURITY.md) for the security policy and private reporting channel.
 
@@ -236,7 +237,7 @@ Dependabot also opens weekly updates for Python dependencies and GitHub Actions.
 coverage, packaging, and security checks on pushes and pull requests, weekly, and
 on manual dispatch. Actions are pinned to full commit SHAs with read-only default
 permissions. The packaging job installs the built wheel into a fresh environment
-and checks imports outside the source tree.
+and checks imports and the full offline test suite outside the source tree.
 
 SonarCloud is optional: configure the repository secret `SONAR_TOKEN` for the
 existing project in `sonar-project.properties`. Fork pull requests do not receive
