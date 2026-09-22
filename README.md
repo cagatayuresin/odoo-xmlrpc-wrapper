@@ -1,209 +1,253 @@
-<a href="https://www.buymeacoffee.com/cagatayuresin" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
-
 # Odoo XMLRPC Wrapper
 
-***
-A small wrapper for oversimplifying CRUD operations and connecting to the Odoo External API
-with the Python xmlrpc module.
-***
+[![CI](https://github.com/cagatayuresin/odoo-xmlrpc-wrapper/actions/workflows/build.yml/badge.svg)](https://github.com/cagatayuresin/odoo-xmlrpc-wrapper/actions/workflows/build.yml)
+[![PyPI](https://img.shields.io/pypi/v/odoo-xmlrpc-wrapper)](https://pypi.org/project/odoo-xmlrpc-wrapper/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-## Index
+A small Python library for connecting to Odoo and working with its XML-RPC API.
+Create, read, update, delete, search, and call custom model methods with a reusable
+`Bot` instance.
 
-- [Odoo XMLRPC Wrapper](#odoo-xmlrpc-wrapper)
-  - [Index](#index)
-  - [Getting Started](#getting-started)
-    - [Installing via pip](#installing-via-pip)
-    - [A Simple Connection](#a-simple-connection)
-    - [CRUD Operations](#crud-operations)
-      - [Create](#create)
-      - [Read](#read)
-      - [Update](#update)
-      - [Delete](#delete)
-    - [Miscellaneous](#miscellaneous)
-      - [Search](#search)
-      - [Search and Read](#search-and-read)
-      - [Count](#count)
-      - [Get Fields](#get-fields)
-      - [Custom](#custom)
-  - [A Little Detail](#a-little-detail)
-    - [Bot Instance](#bot-instance)
-    - [Active Model](#active-model)
-  - [Contribution](#contribution)
-  - [License](#license)
+This README describes the current source, including the changes under
+[Unreleased](CHANGES.txt). These changes are not yet published to PyPI; install
+from your checkout to use them.
 
-***
+## Compatibility and installation
 
-## Getting Started
-
-### Installing via pip
+The current source requires **Python 3.10+**; CI tests Python 3.10–3.14. It uses
+Python's XML-RPC client and `defusedxml` for hardened response parsing.
 
 ```bash
-pip install odoo-xmlrpc-wrapper
+# Published release (may differ from this checkout)
+python -m pip install odoo-xmlrpc-wrapper
+
+# Current source, from the repository directory
+python -m pip install .
 ```
 
-### A Simple Connection
+The server must expose `/xmlrpc/2/common` and `/xmlrpc/2/object`. Tests validate
+client behavior without a live Odoo server; they do not certify every Odoo
+release or hosted plan. Odoo has deprecated these APIs in favor of JSON-2;
+see the [official compatibility and migration notice](https://www.odoo.com/documentation/master/developer/reference/external_rpc_api.html).
+This library implements XML-RPC.
+
+## Connect
+
+Configure `ODOO_HOST`, `ODOO_DB`, `ODOO_USERNAME`, and `ODOO_PASSWORD` in your
+process environment. An Odoo API key can be supplied in place of the password
+where the server supports it.
+
+```python
+import os
+
+from odoo_xmlrpc_wrapper import Bot
+
+with Bot(
+    host=os.environ["ODOO_HOST"],  # e.g. odoo.example.com
+    db=os.environ["ODOO_DB"],
+    userlogin=os.environ["ODOO_USERNAME"],
+    password=os.environ["ODOO_PASSWORD"],
+    timeout=30,
+) as bot:
+    print(bot.status())
+    partners = bot.search_read(
+        "res.partner",
+        constraints=[("is_company", "=", True)],
+        fields=["name", "email"],
+        limit=20,
+    )
+```
+
+The legacy import still works:
 
 ```python
 from odoo_xmlrpc_wrapper import odoo_xmlrpc_wrapper as oxw
-
-
-HOST = "odoo.myhost.com"
-DB = "my_test_db"
-USERLOGIN = "mymailtologin@odoo.com"
-PASSWORD = "mypass"
-
-bot = oxw.Bot(HOST, DB, USERLOGIN, PASSWORD)
 ```
 
-Prints:
+HTTPS validates certificates and hostnames by default. `host` accepts a hostname,
+optional port/base path, or a full URL matching `secured`. Embedded credentials,
+query strings, and fragments are rejected. Plain HTTP requires
+`secured=False`, for example with `host="localhost:8069"` in local development.
 
-```commandline
-Successfully Logged
-Name: Mitchell Admin
-DB: my_test_db
-HOST: https://odoo.myhost.com
-VERSION: saas~16.1
-```
+`timeout` must be a finite positive number of seconds and applies to socket
+operations. Connections are closed when leaving the `with` block; alternatively,
+call `bot.close()`. A closed instance cannot be reused. Construction authenticates
+and reads the user's profile but does not print anything.
 
-### CRUD Operations
+`Bot(test=True)` provisions an external demo through `https://demo.odoo.com/start`.
+It needs internet access, uses the returned HTTPS endpoint, and ignores supplied
+credentials. It is a convenience for manual exploration; the test suite does not
+use it.
 
-Once the model to be processed in the CRUD functions is entered, the following other
-You do not need to specify the model again as long as the model does not change to
-the operation functions.
+## CRUD operations
 
-#### Create
+These examples assume an open `bot` connection. Each explicit `model` becomes the
+active model for later calls. Immediately after login, the active model is
+`res.users`. You can also set `bot.model = "res.partner"` directly. Use a separate
+instance per thread because the active model and connection are shared state.
 
 ```python
-bot.create("res.partner", {"name": "John Doe"})
+# Create returns the server-assigned record ID.
+partner_id = bot.create("res.partner", {"name": "John Doe"})
+
+# Read accepts one positive ID or a list/tuple of IDs.
+records = bot.read(ids=[partner_id], fields=["name"])
+
+# Update and delete return the server's result (normally True).
+updated = bot.update(the_id=partner_id, the_obj={"name": "Jane Doe"})
+deleted = bot.delete(ids=[partner_id])
 ```
 
-#### Read
+No fixed record IDs are assumed. `update()` requires one positive integer ID;
+booleans, missing IDs, and invalid values raise `ValueError` before a request.
+`create()` and `update()` require a dictionary of field values.
+
+## Search, count, and metadata
 
 ```python
-bot.read(ids=[84], fields=["name"])
+ids = bot.search(
+    "res.partner",
+    constraints=[("is_company", "=", True)],
+    offset=0,
+    limit=20,
+)
+
+records = bot.search_read(
+    "res.partner",
+    constraints=[("id", "in", ids)],
+    fields=["name", "email"],
+    limit=20,
+)
+
+# Runs Odoo's search_count; does not download all record IDs.
+total = bot.count("res.partner", constraints=[("is_company", "=", True)])
+
+fields = bot.get_fields("res.partner", attributes=["string", "type"])
 ```
 
-Returns: `[{"id": 84, "name": "John Doe"}]`
+Omitting constraints searches the whole active model. `search_read()` defaults to
+`fields=["name"]`; `read()` defaults to the fields selected by Odoo. Explicit empty
+field/attribute lists and `limit=0`/`offset=0` are forwarded unchanged, so their
+meaning follows the server's API. In particular, zero is not a client-side
+"return nothing" shortcut. Paginate large reads: individual XML responses are
+limited to **30 MiB after decompression**.
 
-#### Update
+## Custom model methods
 
 ```python
-bot.update(the_id=84, the_obj={"name": "Jane Doe"})
+result = bot.custom(
+    "res.partner",
+    "name_search",
+    att=["Azure"],
+    kwargs={"limit": 10},
+)
 ```
 
-#### Delete
+`att` supplies positional arguments and `kwargs` supplies keyword arguments to
+`execute_kw`. For backward compatibility, omitted `att` becomes `[[]]`; pass `[]`
+for a method taking no positional arguments. Private method names are rejected.
+The wrapper returns the server result and respects Odoo's access controls.
 
-```python
-bot.delete(ids=[84])
+## Errors and security
+
+- Invalid configuration or method arguments raise `ValueError` locally.
+- Failed authentication raises `PermissionError` without including credentials.
+- XML-RPC faults, transport errors, and timeouts propagate to the caller. Catch
+  `xmlrpc.client.Fault`, `OSError`, or `TimeoutError` as appropriate for your app.
+- XML responses containing DTDs, entities, or external references are rejected by
+  `defusedxml`. Excessively large responses are rejected before parsing completes.
+- The wrapper does not retry application-level failures. Check the server state
+  before retrying a timed-out write; it may already have succeeded.
+
+See [SECURITY.md](SECURITY.md) for the security policy and private reporting channel.
+
+## Development and checks
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+# Windows PowerShell: .venv\Scripts\Activate.ps1
+python -m pip install --require-hashes -r requirements-dev.txt
+python -m pip install --no-deps --no-build-isolation -e .
+
+# Syntax and style
+python -m compileall -q src tests
+python -m ruff check src tests
+python -m ruff format --check src tests
+
+# Offline regression and security tests, with branch coverage (minimum 90%)
+python -m coverage run -m unittest discover -s tests -v
+python -m coverage report
+python -m coverage xml
+
+# Static security, workflow security, and dependency health
+python -m bandit -r src
+zizmor --offline .github/workflows
+python -m pip check
+python -m pip_audit --strict --require-hashes -r requirements.txt
+python -m pip_audit --strict --require-hashes -r requirements-dev.txt
+
+# Build both distributions; validate package metadata and README rendering
+python -m build --no-isolation
+python -m twine check --strict dist/*
 ```
 
-### Miscellaneous
+The tests mock the RPC boundary and use in-memory XML responses. They cover CRUD
+arguments/results, authentication, input validation, active models, connection
+cleanup, timeouts, certificate verification, and malicious XML. Test execution
+does not provision demo servers, access credentials, or modify a real database.
+Dependency installation and vulnerability database updates need internet access.
 
-#### Search
+Install [Trivy](https://trivy.dev/latest/getting-started/installation/) separately
+(CI pins version 0.74.0), then run:
 
-```python
-bot.search(constraints=[("name", "=", "Mitchell Admin")])
+```bash
+trivy fs --scanners vuln,misconfig,secret --severity HIGH,CRITICAL \
+  --exit-code 1 --skip-dirs .git,.venv,build,dist,.trivy-cache,.audit-reports \
+  --file-patterns 'pip:requirements.*\.txt' .
 ```
 
-Returns:
-`[2]`
+Trivy scans the complete dependency locks and project files, and fails on HIGH or
+CRITICAL findings, including unfixed issues. The misconfiguration scanner applies
+to supported infrastructure files when present; GitHub Actions are checked by
+zizmor. The secret scan covers the current working tree, not full Git history.
+pip-audit checks known advisories at all severities. Passing scans are evidence
+about the checked files and current databases, not a guarantee of no vulnerabilities.
 
-#### Search and Read
+### Updating dependencies
 
-```python
-bot.search_read(constraints=[("name", "=", "Mitchell Admin")])
+`pyproject.toml` is the source of runtime requirements; `requirements-dev.in` lists
+development tools. Both generated `.txt` files pin the complete dependency graph
+and artifact hashes. With [uv](https://docs.astral.sh/uv/) installed:
+
+```bash
+uv pip compile pyproject.toml --universal --python-version 3.10 \
+  --generate-hashes --upgrade -o requirements.txt
+uv pip compile requirements-dev.in --universal --python-version 3.10 \
+  --generate-hashes --upgrade -o requirements-dev.txt
 ```
 
-Returns: `[{'id': 2, 'name': 'Mitchell Admin'}]`
+Review both diffs, reinstall in a fresh environment, and rerun the checks.
+Dependabot also opens weekly updates for Python dependencies and GitHub Actions.
 
-#### Count
+### Continuous integration
 
-```python
-bot.count()
-```
+[GitHub Actions](.github/workflows/build.yml) runs syntax, lint, formatting, tests,
+coverage, packaging, and security checks on pushes and pull requests, weekly, and
+on manual dispatch. Actions are pinned to full commit SHAs with read-only default
+permissions. The packaging job installs the built wheel into a fresh environment
+and checks imports outside the source tree.
 
-Returns: `78`
+SonarCloud is optional: configure the repository secret `SONAR_TOKEN` for the
+existing project in `sonar-project.properties`. Fork pull requests do not receive
+that secret. Local checks do not require a SonarCloud account.
 
-#### Get Fields
+See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidance and
+[CHANGES.txt](CHANGES.txt) for release history. Python 3.7–3.9 users need an older
+release; the current source intentionally targets maintained Python versions.
 
-```python
-bot.get_fields("res.partner.title", attributes=["type"])
-```
+## License and support
 
-Output:
+[MIT](LICENSE) © Cagatay URESIN.
 
-```commandline
-{
-  "name": {"type": "char"},
-  "shortcut": {"type": "char"},
-  "id": {"type": "integer"},
-  "display_name": {"type": "char"},
-  "create_uid": {"type": "many2one"},
-  "create_date": {"type": "datetime"},
-  "write_uid": {"type": "many2one"},
-  "write_date": {"type": "datetime"},
-}
-```
-
-#### Custom
-
-```python
-bot.custom("my_custom.model", "my_custom_method")
-```
-
-Output:
-
-```commandline
-You'll see the return value if your method has a return!
-```
-
-## A Little Detail
-
-### Bot Instance
-
-```python
-bot = oxw.Bot(HOST, DB, USERLOGIN, PASSWORD) # Simple Connection
-bot = oxw.Bot(HOST, DB, USERLOGIN, PASSWORD, secured=False) # For http:// (no-ssl) (localhost)
-bot = oxw.Bot(test=True) # For XMLRPC Tests from Odoo saas
-```
-
-If you are going to connect to a host with an unencrypted http protocol such as localhost,
-`secured=False` must be specified.
-
-`test=True` allows you to connect to one of Odoo's own xmlrpc test servers. Odoo assigns
-you a random host, database, user and password from the demo servers. You don't need other
-attributes when test option is selected.
-
-### Active Model
-
-The default model when a bot instance is initialized is `"res.users"`. So when you command
-`bot.count()` it returns active users total as an integer.
-
-You can assign the active model at any time with `bot.model = "model.name"` or when calling
-any next method, such as `bot.count("res.partner")`
-
-## Contribution
-
-Feel free to contribute. This project needs a fine exception handling.
-
-## License
-
-[MIT License](https://en.wikipedia.org/wiki/MIT_License)
-
-Copyright 2023 Cagatay URESIN
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this
-software and associated documentation files (the “Software”), to deal in the Software
-without restriction, including without limitation the rights to use, copy, modify, merge,
-publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
-to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or
-substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
-PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
-FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-DEALINGS IN THE SOFTWARE.
+[Buy me a coffee](https://www.buymeacoffee.com/cagatayuresin)

@@ -1,3 +1,16 @@
+Unreleased
+    * Require Python 3.10+ and use one pyproject.toml for package metadata.
+    * Verify HTTPS certificates, bound socket waits, reject unsafe XML, and cap responses.
+    * Validate credentials, URLs, models, record IDs, and method arguments before RPC.
+    * Fix update() ID validation; return create(), update(), and delete() results.
+    * Use search_count for counts and preserve explicit zero/empty arguments.
+    * Support custom keyword arguments and safe per-call default arguments.
+    * Add close()/context manager support; remove automatic connection printing.
+    * Add offline regression/security tests and a Python 3.10-3.14 CI matrix.
+    * Add Ruff, Bandit, pip-audit, Trivy, zizmor, and distribution checks to CI.
+    * Lock runtime/development dependencies with hashes; automate dependency updates.
+    * Remove checked-in generated packages and document security and development.
+
 v1.1.1, 2023-05-10 -- Remotely triggering custom commands of any model
     * bot.custom("model.name", "command_name", [[]])
     * added bot.status()

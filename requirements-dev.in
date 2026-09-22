@@ -1,0 +1,11 @@
+# Runtime dependencies are resolved from the project's canonical metadata.
+-r requirements.txt
+bandit>=1.8
+build>=1.2
+coverage>=7.6
+pip>=25.3
+pip-audit>=2.9
+ruff>=0.12
+setuptools>=77.0.3
+twine>=6.1
+zizmor>=1.10

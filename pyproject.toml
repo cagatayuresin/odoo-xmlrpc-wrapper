@@ -1,38 +1,59 @@
+[build-system]
+requires = ["setuptools>=77.0.3"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "odoo_xmlrpc_wrapper"
 version = "1.1.1"
-description = "A simple Python library to make CRUD process easier"
+description = "A small Python wrapper for the Odoo XML-RPC API"
 readme = "README.md"
-requires-python = ">=3.7"
-license = {file = "LICENSE"}
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+dependencies = ["defusedxml>=0.7.1,<0.8"]
 keywords = ["odoo", "external", "api", "xmlrpc", "rpc", "wrapper"]
-authors = [
-  {name = "Cagatay URESIN", email = "cagatayuresin@gmail.com"}
-]
-maintainers = [
-  {name = "Cagatay URESIN", email = "cagatayuresin@gmail.com"}
-]
+authors = [{name = "Cagatay URESIN", email = "cagatayuresin@gmail.com"}]
+maintainers = [{name = "Cagatay URESIN", email = "cagatayuresin@gmail.com"}]
 classifiers = [
   "Development Status :: 5 - Production/Stable",
-  "Environment :: Console",
   "Framework :: Odoo",
-  "Framework :: Odoo :: 16.0",
   "Intended Audience :: Developers",
   "Intended Audience :: System Administrators",
-  "License :: Freeware",
-  "License :: OSI Approved :: MIT License",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.7",
-  "Topic :: Office/Business",
-  "Topic :: Software Development :: Libraries",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Topic :: Software Development :: Libraries :: Python Modules",
 ]
+
 [project.urls]
-"Homepage" = "https://github.com/cagatayuresin/odoo-xmlrpc-wrapper"
-"Bug Reports" = "https://github.com/cagatayuresin/odoo-xmlrpc-wrapper/issues"
-"Buy Me A Coffee" = "https://www.buymeacoffee.com/cagatayuresin"
-"Source" = "https://github.com/cagatayuresin/odoo-xmlrpc-wrapper"
-[build-system]
-requires = ["setuptools>=43.0.0", "wheel"]
-build-backend = "setuptools.build_meta"
+Homepage = "https://github.com/cagatayuresin/odoo-xmlrpc-wrapper"
+Issues = "https://github.com/cagatayuresin/odoo-xmlrpc-wrapper/issues"
+Source = "https://github.com/cagatayuresin/odoo-xmlrpc-wrapper"
+Funding = "https://www.buymeacoffee.com/cagatayuresin"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["odoo_xmlrpc_wrapper*"]
+namespaces = false
+
+[tool.ruff]
+target-version = "py310"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "B", "UP"]
+
+[tool.coverage.run]
+branch = true
+source = ["odoo_xmlrpc_wrapper"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 90
+
+[tool.coverage.xml]
+output = "coverage.xml"

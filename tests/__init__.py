@@ -1,1 +1,1 @@
-from tests import test_odoo_xmlrpc_wapper
+"""Offline test suite for odoo-xmlrpc-wrapper."""
