@@ -1,10 +1,14 @@
 # Changelog
 
-## Unreleased — 2.0.0rc1
+## Unreleased
 
-Release candidate for manual testing. Not yet published to PyPI. The next stable
-version is planned as 2.0.0 because the
-Python requirement and some public behavior have changed.
+No changes yet.
+
+## 2.0.0 — 2026-09-22
+
+Major release with hardened XML-RPC connections, corrected CRUD behavior, and
+read-only reporting examples. Review the migration notes before upgrading from
+1.1.1: the Python requirement and some public behavior have changed.
 
 ### Live validation
 
@@ -70,7 +74,11 @@ Python requirement and some public behavior have changed.
 - Offline CRUD/security tests replace live-demo tests with fixed record IDs.
 - CI tests Python 3.10–3.14 with a minimum 90% combined statement/branch coverage.
 - Syntax, Ruff, Bandit, pip-audit, Trivy, zizmor, build, and installed-wheel checks
-  run in CI. Dependabot updates Python packages and pinned GitHub Actions.
+  run in CI. Routine Dependabot version-update PRs are paused for Python packages
+  and pinned GitHub Actions; GitHub security-update settings remain independent.
+- SonarCloud uses Automatic Analysis with `.sonarcloud.properties`. The separate
+  CI Sonar scanner is removed to avoid conflicting analyses; coverage thresholds
+  and security checks remain enforced by GitHub Actions.
 
 ## 1.1.1 — 2023-05-15
 

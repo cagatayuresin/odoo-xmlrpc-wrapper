@@ -2,6 +2,8 @@ include CHANGES.txt
 include CHANGELOG.md
 include CONTRIBUTING.md
 include SECURITY.md
+include RELEASE_NOTES.md
+include RELEASING.md
 include requirements.txt
 include requirements-dev.in
 include requirements-dev.txt

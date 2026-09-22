@@ -8,9 +8,9 @@ A small Python library for connecting to Odoo and working with its XML-RPC API.
 Create, read, update, delete, search, and call custom model methods with a reusable
 `Bot` instance.
 
-This README describes **2.0.0rc1**, a release candidate for manual testing. It is
-not yet published to PyPI; install from your checkout to use it. See the
-[changelog and migration notes](CHANGELOG.md) for changes from 1.1.1.
+This README describes **2.0.0**. See the [changelog and migration notes](CHANGELOG.md)
+before upgrading from 1.1.1; the minimum Python version and some API behavior
+have changed.
 
 ## Compatibility and installation
 
@@ -164,15 +164,15 @@ See [SECURITY.md](SECURITY.md) for the security policy and private reporting cha
 
 ## Manual test against your Odoo server
 
-From your checkout, build and install the candidate as a real pip distribution:
+From your checkout, build and install the package as a real pip distribution:
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --require-hashes -r requirements-dev.txt
-python -m build --no-isolation --outdir dist/2.0.0rc1
-python -m twine check --strict dist/2.0.0rc1/*
-python -m pip install --no-deps --force-reinstall dist/2.0.0rc1/*.whl
+python -m build --no-isolation --outdir dist/2.0.0
+python -m twine check --strict dist/2.0.0/*.whl dist/2.0.0/*.tar.gz
+python -m pip install --no-deps --force-reinstall dist/2.0.0/*.whl
 python examples/live_smoke_test.py
 ```
 
@@ -288,7 +288,13 @@ uv pip compile requirements-dev.in --universal --python-version 3.10 \
 ```
 
 Review both diffs, reinstall in a fresh environment, and rerun the checks.
-Dependabot also opens weekly updates for Python dependencies and GitHub Actions.
+Routine Dependabot version-update PRs for Python dependencies and GitHub Actions
+are paused with `open-pull-requests-limit: 0`. Update them manually using the
+commands above and review pinned Action SHAs separately. This setting does not
+disable Dependabot alerts or security-update PRs enabled in GitHub repository
+settings. It takes effect once the configuration reaches the default branch.
+Existing update PRs can be reviewed or closed separately. See the
+[Dependabot configuration reference](https://docs.github.com/en/code-security/reference/supply-chain-security/dependabot-options-reference#open-pull-requests-limit).
 
 ### Continuous integration
 
@@ -298,13 +304,36 @@ on manual dispatch. Actions are pinned to full commit SHAs with read-only defaul
 permissions. The packaging job installs the built wheel into a fresh environment
 and checks imports and the full offline test suite outside the source tree.
 
-SonarCloud is optional: configure the repository secret `SONAR_TOKEN` for the
-existing project in `sonar-project.properties`. Fork pull requests do not receive
-that secret. Local checks do not require a SonarCloud account.
+### SonarCloud Automatic Analysis
+
+SonarQube Cloud (SonarCloud) analyzes this repository through its GitHub
+integration. In the SonarCloud project, select **Administration → Analysis Method**
+and turn **Automatic Analysis** on. Source paths, test paths, encoding, and Python
+versions are configured in [.sonarcloud.properties](.sonarcloud.properties).
+
+Commit the configuration and workflow changes together and push them to `master`.
+Then check the SonarCloud result for that commit. A green GitHub Actions **CI**
+run alone does not confirm the separate SonarCloud analysis passed. Do not rerun
+an older workflow containing the Sonar scanner after enabling automatic analysis;
+CI-based and automatic Sonar analyses cannot run together for the same project.
+
+The GitHub Actions workflow does not run a Sonar scanner and does not need
+`SONAR_TOKEN`. An existing repository secret with that name can be removed from
+GitHub settings if nothing else uses it. Local checks require no SonarCloud account.
+
+Automatic Analysis does not import coverage reports. GitHub Actions still runs
+the full test suite with branch coverage on Python 3.10–3.14 and enforces a 90%
+minimum. Read coverage results in the **Python** jobs' test step. Syntax, lint,
+packaging, Bandit, pip-audit, Trivy, and workflow security checks also run in CI.
+
+See the official [Automatic Analysis documentation](https://docs.sonarsource.com/sonarqube-cloud/analyzing-source-code/automatic-analysis)
+for supported configuration and limitations.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidance and
 [CHANGELOG.md](CHANGELOG.md) for release history. Python 3.7–3.9 users need an older
 release; the current source intentionally targets maintained Python versions.
+Maintainers can follow [RELEASING.md](RELEASING.md) to publish a verified package
+to PyPI and create the matching GitHub release.
 
 ## License and support
 

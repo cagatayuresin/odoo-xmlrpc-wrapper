@@ -1,7 +1,7 @@
 # Read-only Odoo examples
 
 Run these scripts from the repository root with Python 3.10+ and this checkout's
-`odoo-xmlrpc-wrapper` package installed. If you already installed the 2.0.0rc1 wheel
+`odoo-xmlrpc-wrapper` package installed. If you already installed a 2.x wheel
 for the live smoke test, no reinstall is needed for these examples.
 
 ```bash

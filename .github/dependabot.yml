@@ -7,7 +7,8 @@ updates:
       day: monday
       time: "06:00"
       timezone: Europe/Istanbul
-    open-pull-requests-limit: 10
+    # Pause routine version PRs without disabling security updates.
+    open-pull-requests-limit: 0
     groups:
       python-dependencies:
         patterns: ["*"]
@@ -18,7 +19,8 @@ updates:
       day: monday
       time: "06:00"
       timezone: Europe/Istanbul
-    open-pull-requests-limit: 10
+    # Pause routine version PRs without disabling security updates.
+    open-pull-requests-limit: 0
     groups:
       github-actions:
         patterns: ["*"]

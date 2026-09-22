@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "odoo_xmlrpc_wrapper"
-version = "2.0.0rc1"
+version = "2.0.0"
 description = "A small Python wrapper for the Odoo XML-RPC API"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -15,7 +15,7 @@ keywords = ["odoo", "external", "api", "xmlrpc", "rpc", "wrapper"]
 authors = [{name = "Cagatay URESIN", email = "cagatayuresin@gmail.com"}]
 maintainers = [{name = "Cagatay URESIN", email = "cagatayuresin@gmail.com"}]
 classifiers = [
-  "Development Status :: 4 - Beta",
+  "Development Status :: 5 - Production/Stable",
   "Framework :: Odoo",
   "Intended Audience :: Developers",
   "Intended Audience :: System Administrators",
