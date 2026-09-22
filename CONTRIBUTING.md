@@ -9,7 +9,7 @@ opening a pull request.
   RPC boundary; test malformed XML with in-memory responses.
 - Keep credentials, generated distributions, caches, and virtual environments out
   of commits. Build artifacts belong in releases, not the source tree.
-- Put package metadata in `pyproject.toml`. Update `CHANGES.txt` under Unreleased
+- Put package metadata in `pyproject.toml`. Update `CHANGELOG.md` under Unreleased
   when behavior changes. The maintainer chooses the release version before
   publication.
 - Regenerate both lock files when changing dependencies, then run pip-audit and

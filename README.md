@@ -8,9 +8,9 @@ A small Python library for connecting to Odoo and working with its XML-RPC API.
 Create, read, update, delete, search, and call custom model methods with a reusable
 `Bot` instance.
 
-This README describes the current source, including the changes under
-[Unreleased](CHANGES.txt). These changes are not yet published to PyPI; install
-from your checkout to use them.
+This README describes **2.0.0rc1**, a release candidate for manual testing. It is
+not yet published to PyPI; install from your checkout to use it. See the
+[changelog and migration notes](CHANGELOG.md) for changes from 1.1.1.
 
 ## Compatibility and installation
 
@@ -162,6 +162,43 @@ The wrapper returns the server result and respects Odoo's access controls.
 
 See [SECURITY.md](SECURITY.md) for the security policy and private reporting channel.
 
+## Manual test against your Odoo server
+
+From your checkout, build and install the candidate as a real pip distribution:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --require-hashes -r requirements-dev.txt
+python -m build --no-isolation --outdir dist/2.0.0rc1
+python -m twine check --strict dist/2.0.0rc1/*
+python -m pip install --no-deps --force-reinstall dist/2.0.0rc1/*.whl
+python examples/live_smoke_test.py
+```
+
+The script prints the installed package version, then prompts for the host,
+database name, login/email, and password/API key. Password input is hidden and is
+not saved to disk or passed as a command-line argument. Use the exact database
+name, not the website name or a URL. HTTPS is the default; use `--http` only when
+you explicitly intend to send credentials over an unencrypted connection.
+
+It checks authentication, `read`, `search`, `search_read`, `count`, `get_fields`,
+and `custom(search_count)` against your own `res.users` record, then closes the
+connection. It does not create, update, or delete business records. Odoo itself
+may record login/audit metadata during authentication. The account needs API and
+model read access; an access fault alone does not establish a wrapper bug.
+
+Success ends with `SUCCESS: all live read checks passed.` A failure returns a
+nonzero exit status and identifies the stage without printing credentials or
+raw server fault details. Share the package/server versions and PASS/FAIL lines
+when reporting the result. This script is manual and is never run against a
+real server by CI. Creation/update/deletion need a separate test using a
+dedicated test record after the read checks pass.
+
+These commands install the wheel rather than an editable checkout. To resume
+source development afterwards, run
+`python -m pip install --no-deps --no-build-isolation -e .`.
+
 ## Development and checks
 
 ```bash
@@ -172,9 +209,9 @@ python -m pip install --require-hashes -r requirements-dev.txt
 python -m pip install --no-deps --no-build-isolation -e .
 
 # Syntax and style
-python -m compileall -q src tests
-python -m ruff check src tests
-python -m ruff format --check src tests
+python -m compileall -q src tests examples
+python -m ruff check src tests examples
+python -m ruff format --check src tests examples
 
 # Offline regression and security tests, with branch coverage (minimum 90%)
 python -m coverage run -m unittest discover -s tests -v
@@ -244,7 +281,7 @@ existing project in `sonar-project.properties`. Fork pull requests do not receiv
 that secret. Local checks do not require a SonarCloud account.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidance and
-[CHANGES.txt](CHANGES.txt) for release history. Python 3.7–3.9 users need an older
+[CHANGELOG.md](CHANGELOG.md) for release history. Python 3.7–3.9 users need an older
 release; the current source intentionally targets maintained Python versions.
 
 ## License and support

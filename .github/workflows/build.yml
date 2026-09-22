@@ -46,7 +46,7 @@ jobs:
           python -m pip install --no-build-isolation --no-deps --editable .
           python -m pip check
       - name: Check Python syntax
-        run: python -m compileall -q src tests
+        run: python -m compileall -q src tests examples
       - name: Lint and check formatting
         run: |
           python -m ruff check .

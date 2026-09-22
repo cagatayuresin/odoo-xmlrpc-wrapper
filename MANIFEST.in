@@ -1,6 +1,8 @@
 include CHANGES.txt
+include CHANGELOG.md
 include CONTRIBUTING.md
 include SECURITY.md
 include requirements.txt
 include requirements-dev.in
 include requirements-dev.txt
+recursive-include examples *.py
