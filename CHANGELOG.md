@@ -11,8 +11,11 @@ Python requirement and some public behavior have changed.
 - On 2026-09-22, the maintainer reported that the read smoke test passed against
   Odoo `16.0-20250909`: authentication, `read`, `search`, `search_read`, `count`,
   `get_fields`, `custom(search_count)`, and connection cleanup.
-- The reporting examples below still need manual validation on their respective
-  models. Create/update/delete operations have not been validated on that server.
+- On the same date, the maintainer also reported successful live runs of all four
+  read-only examples: contacts, CRM opportunities/stage counts, sales orders,
+  and model field metadata.
+- These results cover the tested deployment. Create/update/delete operations
+  have not been validated on that server.
 
 ### Migration from 1.1.1
 

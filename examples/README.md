@@ -110,6 +110,7 @@ check for the current user.
 - These scripts are manual examples. Automated tests replace the connection
   with mocks and verify that only read methods are used.
 
-The maintainer reported a successful `live_smoke_test.py` run against Odoo
-`16.0-20250909` on 2026-09-22. The reporting scripts are separate scenarios and
-still await live validation.
+On 2026-09-22, the maintainer reported a successful `live_smoke_test.py` run against
+Odoo `16.0-20250909`, followed by successful live runs of all four reporting
+examples. These results describe the tested deployment; installed modules and
+access rules may differ on another server.

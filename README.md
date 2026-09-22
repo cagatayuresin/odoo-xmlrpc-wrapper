@@ -217,8 +217,8 @@ runs; the password is always entered interactively. Lists are limited to 1–100
 rows, and sales subtotals cover only displayed rows with currencies kept separate.
 CRM and sales examples need the corresponding Odoo modules and read permissions.
 
-The original read smoke test passed on Odoo `16.0-20250909`, as reported by the
-maintainer. The new reporting examples await live validation. See
+The maintainer reported successful live runs of the read smoke test on Odoo
+`16.0-20250909` and all four reporting examples on 2026-09-22. See
 [the examples guide](examples/README.md) for filters, commands, and method mappings.
 
 ## Development and checks
