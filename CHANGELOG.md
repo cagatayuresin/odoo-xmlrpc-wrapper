@@ -2,7 +2,15 @@
 
 ## Unreleased
 
-No changes yet.
+### Changed
+
+- Create the verifying TLS context explicitly before passing it to the HTTPS
+  transport so static analysis can follow it. Certificate and hostname
+  verification remain enabled through Python's secure defaults.
+- Extract timeout validation from the constructor and share its error message
+  without changing accepted values or exceptions.
+- Isolate the operation under test in XML response exception assertions and
+  verify that HTTPS connections use the transport's explicit TLS context.
 
 ## 2.0.0 — 2026-09-22
 

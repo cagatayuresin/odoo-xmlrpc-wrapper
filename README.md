@@ -64,7 +64,8 @@ The legacy import still works:
 from odoo_xmlrpc_wrapper import odoo_xmlrpc_wrapper as oxw
 ```
 
-HTTPS validates certificates and hostnames by default. `host` accepts a hostname,
+HTTPS uses an explicit verifying TLS context with Python's secure defaults to
+validate server certificates and hostnames. `host` accepts a hostname,
 optional port/base path, or a full URL matching `secured`. Embedded credentials,
 query strings, and fragments are rejected. Plain HTTP requires
 `secured=False`, for example with `host="localhost:8069"` in local development.

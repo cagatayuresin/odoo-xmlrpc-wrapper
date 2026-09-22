@@ -192,6 +192,18 @@ class TransportSecurityTests(BotTestCase):
                 transport.make_connection("odoo.example.test").timeout, 2.5
             )
 
+    def test_https_connection_uses_explicit_verified_transport_context(self):
+        with patch.object(
+            ssl,
+            "_create_default_https_context",
+            side_effect=AssertionError("HTTPS must receive the transport SSL context"),
+        ) as implicit_context:
+            self.make_bot()
+            for transport in self.transports:
+                connection = transport.make_connection("odoo.example.test")
+                self.assertIs(connection._context, transport.context)
+        implicit_context.assert_not_called()
+
     def test_http_requires_explicit_opt_in_and_keeps_timeout(self):
         self.make_bot(host="http://localhost:8069", secured=False, timeout=4)
         for call in self.proxy.call_args_list:
@@ -365,8 +377,9 @@ class XmlResponseSecurityTests(BotTestCase):
         self.make_bot()
         fault = xmlrpc.client.Fault(2, "Access denied")
         payload = xmlrpc.client.dumps(fault).encode()
+        response = self.response(payload)
         with self.assertRaises(xmlrpc.client.Fault) as error:
-            self.transports[0].parse_response(self.response(payload))
+            self.transports[0].parse_response(response)
         self.assertEqual(error.exception.faultCode, 2)
         self.assertEqual(error.exception.faultString, "Access denied")
 
@@ -397,8 +410,9 @@ class XmlResponseSecurityTests(BotTestCase):
                         f"<string>{content}</string>"
                         "</value></param></params></methodResponse>"
                     ).encode()
+                    response = self.response(payload)
                     with self.assertRaises(DefusedXmlException):
-                        transport.parse_response(self.response(payload))
+                        transport.parse_response(response)
 
     def test_stdlib_xmlrpc_parser_is_not_globally_replaced(self):
         self.make_bot()
@@ -407,19 +421,19 @@ class XmlResponseSecurityTests(BotTestCase):
     def test_oversized_xml_response_is_rejected(self):
         self.make_bot()
         payload = xmlrpc.client.dumps(("x" * 512,), methodresponse=True).encode()
+        response = self.response(payload)
         with patch.object(oxw, "_MAX_RESPONSE_BYTES", 256):
             with self.assertRaises(ValueError):
-                self.transports[0].parse_response(self.response(payload))
+                self.transports[0].parse_response(response)
 
     def test_compressed_xml_cannot_bypass_response_size_limit(self):
         self.make_bot()
         payload = xmlrpc.client.dumps(("x" * 8192,), methodresponse=True).encode()
         self.assertLess(len(gzip.compress(payload)), 256)
+        response = self.response(payload, compressed=True)
         with patch.object(oxw, "_MAX_RESPONSE_BYTES", 256):
             with self.assertRaises(ValueError):
-                self.transports[0].parse_response(
-                    self.response(payload, compressed=True)
-                )
+                self.transports[0].parse_response(response)
 
 
 class RecordOperationTests(BotTestCase):

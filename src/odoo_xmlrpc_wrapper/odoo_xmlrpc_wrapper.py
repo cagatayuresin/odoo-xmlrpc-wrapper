@@ -12,6 +12,7 @@ from urllib.parse import urlsplit
 from defusedxml.xmlrpc import DefusedExpatParser, DefusedGzipDecodedResponse
 
 _MAX_RESPONSE_BYTES = 30 * 1024 * 1024
+_INVALID_TIMEOUT = "timeout must be a finite positive number"
 
 
 class _SafeResponseMixin:
@@ -95,7 +96,8 @@ class _TimeoutSafeTransport(_SafeResponseMixin, xmlrpc.client.SafeTransport):
     """HTTPS transport with certificate verification and a local timeout."""
 
     def __init__(self, timeout):
-        super().__init__(context=ssl.create_default_context())
+        context = ssl.create_default_context()
+        super().__init__(context=context)
         self.timeout = timeout
 
     def make_connection(self, host):
@@ -176,6 +178,18 @@ def _pagination(value, name):
     return value
 
 
+def _timeout_seconds(value):
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValueError(_INVALID_TIMEOUT)
+    try:
+        seconds = float(value)
+    except (OverflowError, ValueError):
+        raise ValueError(_INVALID_TIMEOUT) from None
+    if not math.isfinite(seconds) or seconds <= 0:
+        raise ValueError(_INVALID_TIMEOUT)
+    return seconds
+
+
 class Bot:
     """Connect to Odoo and reuse its authenticated XML-RPC endpoints.
 
@@ -215,14 +229,7 @@ class Bot:
         self._transports = []
         if not isinstance(secured, bool) or not isinstance(test, bool):
             raise ValueError("secured and test must be booleans")
-        if isinstance(timeout, bool) or not isinstance(timeout, (int, float)):
-            raise ValueError("timeout must be a finite positive number")
-        try:
-            self.timeout = float(timeout)
-        except (OverflowError, ValueError):
-            raise ValueError("timeout must be a finite positive number") from None
-        if not math.isfinite(self.timeout) or self.timeout <= 0:
-            raise ValueError("timeout must be a finite positive number")
+        self.timeout = _timeout_seconds(timeout)
 
         try:
             if test:
