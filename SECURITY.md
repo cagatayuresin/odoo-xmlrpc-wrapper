@@ -1,7 +1,8 @@
 # Security policy
 
 Please report suspected vulnerabilities privately to
-[cagatayuresin@gmail.com](mailto:cagatayuresin@gmail.com). Include the affected
+[GitHub private vulnerability reporting](https://github.com/cagatayuresin/odoo-xmlrpc-wrapper/security/advisories/new)
+or [cagatayuresin@gmail.com](mailto:cagatayuresin@gmail.com). Include the affected
 version, a minimal reproduction, and the expected impact. Do not include real
 credentials or customer data, or open a public issue containing an exploit
 before the maintainer has had a chance to investigate.
@@ -38,6 +39,12 @@ schedule. Trivy scans dependencies, secrets, and supported infrastructure
 configuration, and fails on HIGH or CRITICAL findings. pip-audit fails on any
 known vulnerability returned by its database. No vulnerability ignore list or
 `continue-on-error` bypass is configured for these checks.
+
+GitHub CodeQL scans Python and GitHub Actions code. Dependabot alerts report
+known vulnerabilities in the dependency graph. Secret scanning and push
+protection help detect supported credential types and prevent their publication.
+Routine Dependabot version-update PRs are paused; alerts and security-update
+settings are independent of that schedule.
 
 The dependency lock files include runtime and development tools. Their hashes
 verify downloaded package artifacts; they do not prove a package is safe.

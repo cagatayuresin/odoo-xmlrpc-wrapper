@@ -23,8 +23,8 @@ The current source requires **Python 3.10+**; CI tests Python 3.10–3.14. It us
 Python's XML-RPC client and `defusedxml` for hardened response parsing.
 
 ```bash
-# Published release (may differ from this checkout)
-python -m pip install odoo-xmlrpc-wrapper
+# Install this release from PyPI
+python -m pip install --upgrade "odoo-xmlrpc-wrapper==2.0.0"
 
 # Current source, from the repository directory
 python -m pip install .
@@ -310,6 +310,10 @@ on manual dispatch. Actions are pinned to full commit SHAs with read-only defaul
 permissions. The packaging job installs the built wheel into a fresh environment
 and checks imports and the full offline test suite outside the source tree.
 
+GitHub CodeQL also scans Python and GitHub Actions. Dependabot alerts, secret
+scanning, push protection, and private vulnerability reporting are enabled.
+See [SECURITY.md](SECURITY.md) for reporting instructions and scan limitations.
+
 ### Coverage on Codecov
 
 [Codecov](https://app.codecov.io/gh/cagatayuresin/odoo-xmlrpc-wrapper) displays
@@ -366,7 +370,10 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidance and
 [CHANGELOG.md](CHANGELOG.md) for release history. Python 3.7–3.9 users need an older
 release; the current source intentionally targets maintained Python versions.
 Maintainers can follow [RELEASING.md](RELEASING.md) to publish a verified package
-to PyPI and create the matching GitHub release.
+through GitHub Actions and PyPI Trusted Publishing. The release workflow builds
+and tests the tagged source, then publishes with OIDC authentication. Build
+outputs stay out of Git; the same distributions are available on PyPI and as
+GitHub Release assets.
 
 ## License and support
 

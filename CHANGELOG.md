@@ -2,21 +2,7 @@
 
 ## Unreleased
 
-### Added
-
-- Codecov coverage uploads using GitHub OIDC authentication, a coverage badge,
-  and setup instructions. GitHub Actions retains the 90% coverage requirement.
-- Dynamic SonarCloud Quality Gate, Security Rating, and Reliability Rating badges.
-
-### Changed
-
-- Create the verifying TLS context explicitly before passing it to the HTTPS
-  transport so static analysis can follow it. Certificate and hostname
-  verification remain enabled through Python's secure defaults.
-- Extract timeout validation from the constructor and share its error message
-  without changing accepted values or exceptions.
-- Isolate the operation under test in XML response exception assertions and
-  verify that HTTPS connections use the transport's explicit TLS context.
+No changes yet.
 
 ## 2.0.0 — 2026-09-22
 
@@ -69,6 +55,14 @@ read-only reporting examples. Review the migration notes before upgrading from
   optional non-secret environment defaults, and terminal-safe table output.
 - Security policy, contribution guide, and instructions for testing pip builds.
 
+### Changed
+
+- Create the verifying TLS context explicitly before passing it to the HTTPS
+  transport so static analysis can follow it. Certificate and hostname
+  verification remain enabled through Python's secure defaults.
+- Extract timeout validation from the constructor and share its error message
+  without changing accepted values or exceptions.
+
 ### Fixed
 
 - `update()` validates `the_id` instead of the built-in `id` function.
@@ -86,10 +80,20 @@ read-only reporting examples. Review the migration notes before upgrading from
   setup files and checked-in distributions have been removed.
 - Runtime and development dependencies are locked with artifact hashes.
 - Offline CRUD/security tests replace live-demo tests with fixed record IDs.
+- Isolate the operation under test in XML response exception assertions and
+  verify that HTTPS connections use the transport's explicit TLS context.
 - CI tests Python 3.10–3.14 with a minimum 90% combined statement/branch coverage.
+- Codecov coverage uploads use GitHub OIDC authentication, with a coverage badge
+  and setup instructions. GitHub Actions retains the 90% coverage requirement.
+- Dynamic SonarCloud Quality Gate, Security Rating, and Reliability Rating badges
+  display the latest analysis results.
+- A PyPI Trusted Publishing workflow uses GitHub OIDC authentication to publish
+  verified distributions without a stored PyPI API token.
 - Syntax, Ruff, Bandit, pip-audit, Trivy, zizmor, build, and installed-wheel checks
   run in CI. Routine Dependabot version-update PRs are paused for Python packages
   and pinned GitHub Actions; GitHub security-update settings remain independent.
+- GitHub private vulnerability reporting, Dependabot alerts, CodeQL scanning for
+  Python and GitHub Actions, secret scanning, and push protection are enabled.
 - SonarCloud uses Automatic Analysis with `.sonarcloud.properties`. The separate
   CI Sonar scanner is removed to avoid conflicting analyses; coverage thresholds
   and security checks remain enforced by GitHub Actions.

@@ -24,10 +24,15 @@ and adds read-only examples for exploring a real Odoo installation.
 - Add read-only contacts, CRM pipeline, sales order, and field metadata examples.
 - Consolidate packaging and add hash-locked dependencies, Python 3.10–3.14 CI,
   security scanning, and installed-wheel tests.
+- Add Codecov coverage reporting using GitHub OIDC authentication and dynamic
+  SonarCloud Quality Gate, Security Rating, and Reliability Rating badges.
+- Add a PyPI Trusted Publishing workflow using GitHub OIDC authentication.
+- Enable GitHub private vulnerability reporting, Dependabot alerts, CodeQL for
+  Python and GitHub Actions, secret scanning, and push protection.
 
 ## Validation
 
-- 79 offline tests pass, including read-only example and security regressions.
+- 80 offline tests pass, including read-only example and security regressions.
 - Package code coverage is 95% with branch coverage enabled.
 - The maintainer reported successful authentication/read smoke tests against
   Odoo `16.0-20250909` and successful live runs of all four reporting examples.
