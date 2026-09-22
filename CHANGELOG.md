@@ -2,9 +2,17 @@
 
 ## Unreleased — 2.0.0rc1
 
-Release candidate for manual testing. Not yet published to PyPI; live Odoo
-validation is pending. The next stable version is planned as 2.0.0 because the
+Release candidate for manual testing. Not yet published to PyPI. The next stable
+version is planned as 2.0.0 because the
 Python requirement and some public behavior have changed.
+
+### Live validation
+
+- On 2026-09-22, the maintainer reported that the read smoke test passed against
+  Odoo `16.0-20250909`: authentication, `read`, `search`, `search_read`, `count`,
+  `get_fields`, `custom(search_count)`, and connection cleanup.
+- The reporting examples below still need manual validation on their respective
+  models. Create/update/delete operations have not been validated on that server.
 
 ### Migration from 1.1.1
 
@@ -34,6 +42,10 @@ Python requirement and some public behavior have changed.
 - Per-connection HTTP/HTTPS timeouts and strict URL validation.
 - Interactive `examples/live_smoke_test.py` for manually checking a real server
   without creating, updating, or deleting business records.
+- Read-only examples for contacts, CRM stage counts/opportunities, recent sales
+  orders with separate currency subtotals, and searchable field metadata.
+- Shared example connection prompts, hidden password entry, bounded result lists,
+  optional non-secret environment defaults, and terminal-safe table output.
 - Security policy, contribution guide, and instructions for testing pip builds.
 
 ### Fixed

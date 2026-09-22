@@ -199,6 +199,28 @@ These commands install the wheel rather than an editable checkout. To resume
 source development afterwards, run
 `python -m pip install --no-deps --no-build-isolation -e .`.
 
+### Read-only reporting examples
+
+With the package installed, run these from the repository directory:
+
+```bash
+python examples/contacts.py --companies --limit 10
+python examples/crm_pipeline.py --limit 15
+python examples/sales_orders.py --state all --limit 10
+python examples/model_fields.py --model crm.lead --query revenue
+```
+
+These examples query contacts, CRM stage counts and opportunities, recent sales
+orders, and model metadata. They prompt for connection details and a hidden
+password/API key. You can reuse `ODOO_HOST`, `ODOO_DB`, and `ODOO_USERNAME` across
+runs; the password is always entered interactively. Lists are limited to 1–100
+rows, and sales subtotals cover only displayed rows with currencies kept separate.
+CRM and sales examples need the corresponding Odoo modules and read permissions.
+
+The original read smoke test passed on Odoo `16.0-20250909`, as reported by the
+maintainer. The new reporting examples await live validation. See
+[the examples guide](examples/README.md) for filters, commands, and method mappings.
+
 ## Development and checks
 
 ```bash
@@ -227,7 +249,7 @@ python -m pip_audit --strict --require-hashes -r requirements-dev.txt
 
 # Build both distributions; validate package metadata and README rendering
 python -m build --no-isolation
-python -m twine check --strict dist/*
+python -m twine check --strict dist/*.whl dist/*.tar.gz
 ```
 
 The tests mock the RPC boundary and use in-memory XML responses. They cover CRUD

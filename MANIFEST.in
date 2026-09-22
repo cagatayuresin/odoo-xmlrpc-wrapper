@@ -5,4 +5,4 @@ include SECURITY.md
 include requirements.txt
 include requirements-dev.in
 include requirements-dev.txt
-recursive-include examples *.py
+recursive-include examples *.py *.md

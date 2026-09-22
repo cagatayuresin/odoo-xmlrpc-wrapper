@@ -1,3 +1,3 @@
 Release history and migration notes have moved to CHANGELOG.md.
 
-Current candidate: 2.0.0rc1 (unreleased; live validation pending).
+Current candidate: 2.0.0rc1 (unreleased; Odoo 16 read smoke test passed).
